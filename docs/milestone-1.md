@@ -4,7 +4,12 @@
 
 ## 1. Team & Store
 
-- **Team members:** TODO — name 1, name 2, name 3, name 4, (name 5)
+- **Team members:**
+  - Luis Rodríguez ([@luisdaa22](https://github.com/luisdaa22))
+  - _Name_ ([@daneklu](https://github.com/daneklu))
+  - Emmanuel Arias ([@yair91](https://github.com/yair91))
+  - Ana Urrutia ([@anaaurrutiaa](https://github.com/anaaurrutiaa))
+  - Lide González ([@lide8](https://github.com/lide8))
 - **Store name:** Raíz Plant Shop
 - **Store vertical / concept:** Online plant shop — easy-care houseplants plus pots and care tools.
 - **Repository:** https://github.com/luisdaa22/Milestone-1-Understand-Establish-the-Baseline-
