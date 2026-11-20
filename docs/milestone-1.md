@@ -124,7 +124,7 @@ One blueprint per page area, a session-cookie cart, SQLite with `create_all` ins
 The card is charged (step 5) *before* the order is committed (step 7). If the commit fails (DB error, constraint, crash), the customer has been charged with no order and nothing records or refunds the payment. Separately, stock is checked and then decremented in Python with no row lock or conditional update, so two concurrent checkouts for the last unit can both pass the check and drive stock negative. Both are harmless with a fake provider and a single local user, but become real defects with a real payment provider or concurrent traffic.
 
 **O5 — Technical debt: weak input handling at the edges.**
-`cart.update` does `int(request.form.get("quantity"))` with no error handling: posting `quantity=abc` returns **HTTP 500** (verified). The browser's `type="number"` input normally prevents this, so it is debt rather than a user-visible bug today. Also, the cart lets a quantity exceed stock until checkout, and `/orders` lists *every* customer's orders because there are no accounts — fine for a demo, but a privacy problem once real customers exist.
+`cart.update` does `int(request.form.get("quantity"))` with no error handling: posting `quantity=abc` returns **HTTP 500** (verified). The browser's `type="number"` input blocks letters but not an empty field, so clearing the quantity and pressing *Update* also returns 500. That part is a real, user-visible defect (see section 2, fixed in PR #2). Also, the cart lets a quantity exceed stock until checkout, and `/orders` lists *every* customer's orders because there are no accounts — fine for a demo, but a privacy problem once real customers exist.
 
 ## 6. AI Use
 
