@@ -130,4 +130,10 @@ The card is charged (step 5) *before* the order is committed (step 7). If the co
 
 - **Tool:** Claude Code (Anthropic), used in VS Code.
 - **What it helped with:** reading the starter code and summarising responsibilities; drafting the Mermaid diagram and design observations; generating the plant catalog text and SVG product images; running the baseline verification script against the real SQLite database; diagnosing the Windows `reset_db.py` `PermissionError` and proposing the one-line fix.
-- **What the team reviewed / validated:** TODO — e.g. "we checked each observation against the code, re-ran the tests and the purchase flow manually in the browser, and confirmed the diagram matches the imports in `routes/`."
+- **Also used:** Claude (Anthropic) to repeat the end-to-end validation on macOS, spot the empty-quantity and `verify.sh` defects, and assemble the evidence PDF.
+- **What the team reviewed / validated:**
+  - Chose the store concept, products and prices.
+  - Re-ran the tests and the purchase flow (`tok_success` and `tok_fail`) in the browser on our own machines, and the restart check for orders and stock.
+  - Checked each observation against the code and confirmed the diagram matches the imports in `routes/`.
+  - Reproduced the Windows `reset_db.py` error before accepting the fix.
+  - Decided not to redesign anything in M1 beyond the defect fix.
