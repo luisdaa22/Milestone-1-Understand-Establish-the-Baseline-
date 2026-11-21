@@ -4,7 +4,12 @@
 
 ## 1. Team & Store
 
-- **Team members:** TODO — name 1, name 2, name 3, name 4, (name 5)
+- **Team members:**
+  - Luis Rodríguez ([@luisdaa22](https://github.com/luisdaa22))
+  - _Name_ ([@daneklu](https://github.com/daneklu))
+  - Emmanuel Arias ([@yair91](https://github.com/yair91))
+  - Ana Urrutia ([@anaaurrutiaa](https://github.com/anaaurrutiaa))
+  - Lide González ([@lide8](https://github.com/lide8))
 - **Store name:** Raíz Plant Shop
 - **Store vertical / concept:** Online plant shop — easy-care houseplants plus pots and care tools.
 - **Repository:** https://github.com/luisdaa22/Milestone-1-Understand-Establish-the-Baseline-
@@ -18,7 +23,7 @@
 - [x] Catalog → cart → checkout → order flow works end-to-end.
 - [x] Orders and inventory changes persist after restarting the app.
 
-Evidence (run on Windows 11, Python 3.13, against the real seeded `instance/store.db`):
+Evidence (run on Windows 11, Python 3.13, against the real seeded `src/instance/store.db`):
 
 | Step | Result |
 |---|---|
@@ -28,7 +33,25 @@ Evidence (run on Windows 11, Python 3.13, against the real seeded `instance/stor
 | **New Python process** reads the DB | `orders` row 1: Ana, subtotal 109800, shipping 9900, total 119700, `pay_946b5bf3d337`, `confirmed`; `order_items`: (PLANT-100, qty 2, 54900) |
 | Same new process reads stock | Monstera stock **6** (seeded 8) |
 
+A second teammate repeated the validation on macOS (Python 3.14) from a clean database:
+
+| Step | Result |
+|---|---|
+| Tests | `python -m pytest -v` → **12 passed** |
+| Cart: 2 × Monstera Deliciosa + 1 × Golden Pothos | Subtotal $1,327.00 |
+| Checkout with `tok_fail` | "Payment was declined", no order created |
+| Checkout with `tok_success` | **Order #1**: $1,327.00 + $99.00 shipping = **$1,426.00**, `confirmed` |
+| Restart Flask, open `/orders` and `/` | Order #1 still listed; stock Monstera 8 → 6, Golden Pothos 20 → 19 |
+| `src/instance/store.db` | `orders` row (132700 / 9900 / 142600 cents), two `order_items` rows with the unit price at purchase time |
+
 **Defect fixed during validation:** `python reset_db.py` crashed on Windows with `PermissionError: [WinError 32]`. It calls `create_app()`, which opens a pooled SQLAlchemy connection to `store.db`, then tries to delete the file while it is still open. Fix: dispose the engine before unlinking (one line in `reset_db.py`). macOS/Linux allow deleting open files, which is why the starter didn't hit this.
+
+**Defects found during the second validation:**
+
+1. **Empty cart quantity returns HTTP 500.** In `/cart`, clearing the quantity field and pressing *Update* sends `quantity=""`; `int("")` raises `ValueError`. The browser's `type="number"` input does not prevent an empty value, so a normal user can hit this. Fixed in PR #2, with two regression tests.
+2. **`scripts/verify.sh` does not reset the database.** It runs `rm -rf instance` in the project root, but Flask's instance folder is `src/instance/`, so the old `store.db` survives. It now calls `python reset_db.py`, which uses the path Flask actually resolves. Fixed in PR #3.
+
+**Extra test coverage:** PR #4 adds 12 tests for baseline behaviour that was not tested yet (inactive products, cart edge cases, checkout validation and totals, order price snapshot and history order). The suite goes from 12 to 24 tests.
 
 ## 3. Current System Design
 
@@ -101,10 +124,16 @@ One blueprint per page area, a session-cookie cart, SQLite with `create_all` ins
 The card is charged (step 5) *before* the order is committed (step 7). If the commit fails (DB error, constraint, crash), the customer has been charged with no order and nothing records or refunds the payment. Separately, stock is checked and then decremented in Python with no row lock or conditional update, so two concurrent checkouts for the last unit can both pass the check and drive stock negative. Both are harmless with a fake provider and a single local user, but become real defects with a real payment provider or concurrent traffic.
 
 **O5 — Technical debt: weak input handling at the edges.**
-`cart.update` does `int(request.form.get("quantity"))` with no error handling: posting `quantity=abc` returns **HTTP 500** (verified). The browser's `type="number"` input normally prevents this, so it is debt rather than a user-visible bug today. Also, the cart lets a quantity exceed stock until checkout, and `/orders` lists *every* customer's orders because there are no accounts — fine for a demo, but a privacy problem once real customers exist.
+`cart.update` does `int(request.form.get("quantity"))` with no error handling: posting `quantity=abc` returns **HTTP 500** (verified). The browser's `type="number"` input blocks letters but not an empty field, so clearing the quantity and pressing *Update* also returns 500. That part is a real, user-visible defect (see section 2, fixed in PR #2). Also, the cart lets a quantity exceed stock until checkout, and `/orders` lists *every* customer's orders because there are no accounts — fine for a demo, but a privacy problem once real customers exist.
 
 ## 6. AI Use
 
 - **Tool:** Claude Code (Anthropic), used in VS Code.
 - **What it helped with:** reading the starter code and summarising responsibilities; drafting the Mermaid diagram and design observations; generating the plant catalog text and SVG product images; running the baseline verification script against the real SQLite database; diagnosing the Windows `reset_db.py` `PermissionError` and proposing the one-line fix.
-- **What the team reviewed / validated:** TODO — e.g. "we checked each observation against the code, re-ran the tests and the purchase flow manually in the browser, and confirmed the diagram matches the imports in `routes/`."
+- **Also used:** Claude (Anthropic) to repeat the end-to-end validation on macOS, spot the empty-quantity and `verify.sh` defects, and assemble the evidence PDF.
+- **What the team reviewed / validated:**
+  - Chose the store concept, products and prices.
+  - Re-ran the tests and the purchase flow (`tok_success` and `tok_fail`) in the browser on our own machines, and the restart check for orders and stock.
+  - Checked each observation against the code and confirmed the diagram matches the imports in `routes/`.
+  - Reproduced the Windows `reset_db.py` error before accepting the fix.
+  - Decided not to redesign anything in M1 beyond the defect fix.
