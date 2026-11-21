@@ -6,6 +6,7 @@ from pathlib import Path
 from flask import Flask
 
 from .db import init_app as init_database
+from .fulfillment import get_option
 
 
 def create_app(test_config: dict | None = None) -> Flask:
@@ -37,5 +38,10 @@ def create_app(test_config: dict | None = None) -> Flask:
     @app.template_filter("money")
     def money(cents: int) -> str:
         return f"${cents / 100:,.2f}"
+
+    @app.template_filter("fulfillment_label")
+    def fulfillment_label(code: str) -> str:
+        option = get_option(code)
+        return option.label if option else code
 
     return app

@@ -6,7 +6,18 @@
 <form method="post" class="form-card">
   <label>Name<input required name="customer_name" autocomplete="name"></label>
   <label>Email<input required type="email" name="customer_email" autocomplete="email"></label>
-  <label>Shipping address<textarea required name="shipping_address" rows="4"></textarea></label>
+  <fieldset class="fulfillment-options">
+    <legend>Fulfillment</legend>
+    {% for option in options %}
+    <label class="option-row">
+      <input type="radio" name="fulfillment_option" value="{{ option.code }}"
+             data-price="{{ option.price_cents }}" data-requires-address="{{ 'yes' if option.requires_address else 'no' }}"
+             {% if option.code == selected_option.code %}checked{% endif %}>
+      <span>{{ option.label }}</span><span class="option-price">{{ option.price_cents|money }}</span>
+    </label>
+    {% endfor %}
+  </fieldset>
+  <label id="address-field">Shipping address<textarea name="shipping_address" rows="4"></textarea><small>Required for shipping. Not needed for Store pickup.</small></label>
   <label>Test payment token<input required name="payment_token" value="tok_success"><small>Use <code>tok_fail</code> to simulate a declined payment.</small></label>
   <button>Place order</button>
 </form>
@@ -14,8 +25,28 @@
   <h3>Order summary</h3>
   {% for line in lines %}<div class="summary-line"><span>{{ line.quantity }} × {{ line.product.name }}</span><span>{{ line.line_total_cents|money }}</span></div>{% endfor %}
   <hr><div class="summary-line"><span>Subtotal</span><span>{{ subtotal_cents|money }}</span></div>
-  <div class="summary-line"><span>Standard shipping</span><span>{{ shipping_cents|money }}</span></div>
-  <div class="summary-line total"><span>Total</span><span>{{ total_cents|money }}</span></div>
+  <div class="summary-line"><span id="shipping-label">{{ selected_option.label }}</span><span id="shipping-amount">{{ shipping_cents|money }}</span></div>
+  <div class="summary-line total"><span>Total</span><span id="total-amount">{{ total_cents|money }}</span></div>
 </aside>
 </div>
+<script>
+  // Presentation only: the server recalculates price and validates the address.
+  (function () {
+    const subtotal = {{ subtotal_cents }};
+    const fmt = c => "$" + (c / 100).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    const address = document.querySelector("#address-field textarea");
+    function update() {
+      const opt = document.querySelector('input[name="fulfillment_option"]:checked');
+      const price = Number(opt.dataset.price);
+      const needsAddress = opt.dataset.requiresAddress === "yes";
+      document.getElementById("shipping-label").textContent = opt.nextElementSibling.textContent;
+      document.getElementById("shipping-amount").textContent = fmt(price);
+      document.getElementById("total-amount").textContent = fmt(subtotal + price);
+      address.required = needsAddress;
+      document.getElementById("address-field").style.display = needsAddress ? "" : "none";
+    }
+    document.querySelectorAll('input[name="fulfillment_option"]').forEach(r => r.addEventListener("change", update));
+    update();
+  })();
+</script>
 {% endblock %}
