@@ -35,3 +35,29 @@ def test_order_history_lists_newest_first(client, app, first_product_id):
     assert page.index(b"Second Buyer") < page.index(b"First Buyer")
     with app.app_context():
         assert len(get_session().scalars(select(Order)).all()) == 2
+
+
+def test_checkout_order_defaults_to_standard_fulfillment(client, app, first_product_id):
+    client.post(f"/cart/add/{first_product_id}")
+    client.post("/checkout", data=CUSTOMER)
+    with app.app_context():
+        assert get_session().get(Order, 1).fulfillment_code == "standard"
+
+
+def test_pickup_order_persists_without_shipping_address(app):
+    with app.app_context():
+        db = get_session()
+        db.add(Order(
+            customer_name="Ada Lovelace",
+            customer_email="ada@example.com",
+            shipping_address="",
+            fulfillment_code="pickup",
+            subtotal_cents=10000,
+            shipping_cents=0,
+            total_cents=10000,
+            payment_reference="pay_test",
+        ))
+        db.commit()
+    with app.app_context():
+        order = get_session().scalar(select(Order))
+        assert (order.fulfillment_code, order.shipping_address) == ("pickup", "")
