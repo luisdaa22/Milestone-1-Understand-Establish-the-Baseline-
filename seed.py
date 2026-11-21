@@ -7,12 +7,12 @@ from store.db import get_session
 from store.models import Product
 
 PRODUCTS = [
-    ("START-100", "Everyday Backpack", "A clean, durable backpack for work, class, or travel.", 79900, 12, "/static/images/backpack.svg"),
-    ("START-110", "Wireless Keyboard", "Compact wireless keyboard with a comfortable low-profile layout.", 119900, 10, "/static/images/keyboard.svg"),
-    ("START-120", "Ceramic Mug", "A simple ceramic mug for coffee, tea, and long debugging sessions.", 24900, 20, "/static/images/mug.svg"),
-    ("START-130", "Desk Lamp", "Adjustable desk lamp with warm and cool light settings.", 64900, 9, "/static/images/lamp.svg"),
-    ("START-140", "Notebook Set", "Three hardcover notebooks for sketches, notes, and architecture diagrams.", 32900, 18, "/static/images/notebooks.svg"),
-    ("START-150", "Travel Bottle", "Insulated stainless-steel bottle for everyday use.", 45900, 15, "/static/images/bottle.svg"),
+    ("PLANT-100", "Monstera Deliciosa", "The classic split-leaf statement plant. Bright indirect light, water when the top 5 cm of soil is dry. 25 cm nursery pot.", 54900, 8, "/static/images/monstera.svg"),
+    ("PLANT-110", "Snake Plant", "Nearly indestructible Sansevieria. Tolerates low light and missed waterings — ideal for a first plant.", 32900, 14, "/static/images/snake-plant.svg"),
+    ("PLANT-120", "Golden Pothos", "Fast-growing trailing vine with marbled yellow-green leaves. Great on shelves or in hanging baskets.", 22900, 20, "/static/images/pothos.svg"),
+    ("PLANT-130", "Succulent Trio", "Three small Echeveria and Graptopetalum in ceramic pots. Full sun, water every two weeks.", 27900, 16, "/static/images/succulents.svg"),
+    ("PLANT-140", "Terracotta Pot Set", "Three breathable clay pots (10, 15 and 20 cm) with drainage holes and saucers.", 34900, 12, "/static/images/terracotta-pots.svg"),
+    ("PLANT-150", "Brass Watering Can", "1.5 L brass-finish watering can with a long, narrow spout for precise watering.", 41900, 10, "/static/images/watering-can.svg"),
 ]
 
 
